@@ -1,32 +1,19 @@
-# Prerequisites
-*.d
-
-# Compiled Object files
-*.slo
-*.lo
+.clang
+.codelite/
+_codelite.project
+_codelite.session
+__codelite.workspace
+~$*.docx
+.project
 *.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
+*.bin
+*.elf
+*.ld
+*.map
+*.hex
+*.lss
+*.lst
 *.exe
-*.out
-*.app
+*.pdf
+*.html
+bmptk_*_stack.c
