@@ -21,5 +21,4 @@ int main( void ){
 	hwlib::wait_ms(1000);
 	radio.print_details();
 	
-	
 }
