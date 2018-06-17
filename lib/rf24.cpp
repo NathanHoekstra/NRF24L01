@@ -1,10 +1,6 @@
 #include "rf24.hpp"
 #include "nrf24l01.hpp"
 
-#define rf24_max(a,b) (a>b?a:b)
-#define rf24_min(a,b) (a<b?a:b)
-#define _BV(x) (1<<(x))
-
 /*****************************************************************************************/
 rf24::rf24(hwlib::spi_bus & bus, hwlib::pin_out & ce, hwlib::pin_out & csn):
 	bus(bus),
@@ -45,11 +41,11 @@ uint8_t rf24::get_status(void){
 /*****************************************************************************************/
 void rf24::print_status(const uint8_t & status){
 	hwlib::cout << "STATUS\t\t =" <<
-	" RX_DR=" << ((status & _BV(RX_DR))?1:0) <<
-	" TX_DS=" << ((status & _BV(TX_DS))?1:0) <<
-	" MAX_RT=" << ((status & _BV(MAX_RT))?1:0) <<
+	" RX_DR=" << ((status & (1<<RX_DR))?1:0) <<
+	" TX_DS=" << ((status & (1<<TX_DS))?1:0) <<
+	" MAX_RT=" << ((status & (1<<MAX_RT))?1:0) <<
 	" RX_P_NO=" << ((status >> RX_P_NO) & 0x07) <<
-	" TX_FULL=" << ((status & _BV(TX_FULL))?1:0) << '\n';
+	" TX_FULL=" << ((status & (1<<TX_FULL))?1:0) << '\n';
 }
 
 /*****************************************************************************************/
@@ -84,7 +80,7 @@ void rf24::print_details(void){
 	
 	print_status(get_status());
 	
-	print_address_register("RX_ADDR_P0", RX_ADDR_P0, 2);
+	print_address_register("RX_ADDR_P0-1", RX_ADDR_P0, 2);
 	print_byte_register("RX_ADDR_P2-5", RX_ADDR_P2, 4);
 	print_address_register("TX_ADDR\ts", TX_ADDR);
 
@@ -118,12 +114,102 @@ void rf24::write_register_5byte(const uint8_t & reg, const std::array<uint8_t, 5
 }
 
 /*****************************************************************************************/
+void rf24::flush_tx(void){
+	std::array<uint8_t, 1> input = {FLUSH_TX};
+	std::array<uint8_t, 1> dummy;
+	bus.write_and_read(csn, input, dummy);
+}
+
+/*****************************************************************************************/
+void rf24::flush_rx(void){
+	std::array<uint8_t, 1> input = {FLUSH_RX};
+	std::array<uint8_t, 1> dummy;
+	bus.write_and_read(csn, input, dummy);
+}
+
+/*****************************************************************************************/
+void rf24::power_down(void){
+	ce.set(0);
+	uint8_t config = read_register(NRF_CONFIG);
+	write_register(NRF_CONFIG, config & ~(1<<PWR_UP));
+}
+
+/*****************************************************************************************/
+void rf24::power_up(void){
+	uint8_t config = read_register(NRF_CONFIG);
+	// Check if the radio is not already powered up, if not power up
+	if(!(config & (1<<PWR_UP))){
+		write_register(NRF_CONFIG, config | (1<<PWR_UP));
+	}
+}
+
+/*****************************************************************************************/
 void rf24::set_channel(const uint8_t & channel){
 	const uint8_t max_channel = 125;
-	write_register(RF_CH, rf24_min(channel, max_channel));
+	write_register(RF_CH, std::min(channel, max_channel));
 }
 
 /*****************************************************************************************/
 uint8_t rf24::get_channel(void){
 	return read_register(RF_CH);
 }
+
+/*****************************************************************************************/
+void rf24::write_payload(const std::array<uint8_t, 7> & data, const uint8_t & length){
+	const uint8_t max_lenght = 32;
+	std::array<uint8_t, 33> input = {0};
+	std::array<uint8_t, 33> dummy;
+	input[0] = W_TX_PAYLOAD;
+	for(uint8_t i = 0; i < std::min(length, max_lenght); i++){
+		input[i+1] = data[i];
+	}
+	hwlib::cout << "Write payload test: ";
+	for(uint8_t i = 0; i < 33; i++){
+		hwlib::cout << hwlib::hex << input[i];
+	}
+	hwlib::cout << '\n';
+	bus.write_and_read(csn, input, dummy);
+	// Give high pulse to ce for 20ns (minimum is 10ns)
+	ce.set(1);
+	hwlib::wait_us(20);
+	ce.set(0);
+}
+
+/*****************************************************************************************/
+void rf24::read_payload(std::array<uint8_t, 32> & buffer){
+	std::array<uint8_t, 33> input = {0};
+	std::array<uint8_t, 33> dummy;
+	input[0] = R_RX_PAYLOAD;
+	bus.write_and_read(csn, input, dummy);
+	for(uint8_t i = 0; i < 32; i++){
+		buffer[i] = dummy[i+1];
+	}
+}
+
+/*****************************************************************************************/
+void rf24::start_listening(void){
+	power_up();
+	uint8_t config = read_register(NRF_CONFIG);
+	write_register(NRF_CONFIG, config | (1<<PRIM_RX));
+	// Reset RX_DR, TX_DS and MAX_RT to ensure good communcation
+	uint8_t status = (1<<RX_DR) | (1<<TX_DS) | (1<<MAX_RT);
+	write_register(NRF_STATUS, status);
+	ce.set(1);
+	flush_rx();
+}
+
+/*****************************************************************************************/
+void rf24::stop_listening(void){
+	ce.set(0);
+	hwlib::wait_ms(200);
+	uint8_t config = read_register(NRF_CONFIG);
+	write_register(NRF_CONFIG, config & ~(1<<PRIM_RX));
+	// Reset RX_DR, TX_DS and MAX_RT to ensure good communcation
+	uint8_t status = (1<<RX_DR) | (1<<TX_DS) | (1<<MAX_RT);
+	write_register(NRF_STATUS, status);
+	
+	flush_tx();
+	power_up();
+}
+
+/*****************************************************************************************/

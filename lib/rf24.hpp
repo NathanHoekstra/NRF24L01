@@ -21,6 +21,12 @@ private:
 	void write_register(const uint8_t & reg, const uint8_t & data);
 	void write_register_5byte(const uint8_t & reg, const std::array<uint8_t, 5> & data);
 	
+	void flush_tx(void);
+	void flush_rx(void);
+	
+	void power_down(void);
+	void power_up(void);
+	
 public:
 	rf24(hwlib::spi_bus & bus, hwlib::pin_out & ce, hwlib::pin_out & csn);
 	
@@ -29,7 +35,11 @@ public:
 	void set_channel(const uint8_t & channel);
 	uint8_t get_channel(void);
 	
+	void write_payload(const std::array<uint8_t, 7> & data, const uint8_t & length);
+	void read_payload(std::array<uint8_t, 32> & buffer);
 	
+	void start_listening(void);
+	void stop_listening(void);
 };
 
 #endif // RF24_HPP
