@@ -176,17 +176,6 @@ void rf24::disable_features(void){
 }
 
 /*****************************************************************************************/
-void rf24::set_channel(const uint8_t & channel){
-	const uint8_t max_channel = 125;
-	write_register(RF_CH, std::min(channel, max_channel));
-}
-
-/*****************************************************************************************/
-uint8_t rf24::get_channel(void){
-	return read_register(RF_CH);
-}
-
-/*****************************************************************************************/
 void rf24::write_payload(const std::array<uint8_t, 32> & data, const uint8_t & length){
 	const uint8_t max_lenght = 32;
 	std::array<uint8_t, 33> input = {0};
@@ -219,6 +208,17 @@ void rf24::read_payload(std::array<uint8_t, 32> & buffer){
 }
 
 /*****************************************************************************************/
+void rf24::set_channel(const uint8_t & channel){
+	const uint8_t max_channel = 125;
+	write_register(RF_CH, std::min(channel, max_channel));
+}
+
+/*****************************************************************************************/
+uint8_t rf24::get_channel(void){
+	return read_register(RF_CH);
+}
+
+/*****************************************************************************************/
 void rf24::start_listening(void){
 	ce.set(0);
 	power_up();
@@ -246,6 +246,7 @@ void rf24::stop_listening(void){
 }
 
 /*****************************************************************************************/
+/*
 void rf24::write(const hwlib::string<0> & data){
 	std::array<uint8_t, 32> buffer = {0};
 	for(uint8_t i = 0; i < data.length(); i ++){
@@ -253,8 +254,9 @@ void rf24::write(const hwlib::string<0> & data){
 	}
 	write_payload(buffer, 32);
 }
-
+*/
 /*****************************************************************************************/
+/*
 void rf24::read(hwlib::string<32> & buffer){
 	std::array<uint8_t, 32> output = {0};
 	read_payload(output);
@@ -262,7 +264,7 @@ void rf24::read(hwlib::string<32> & buffer){
 		buffer[i] = output[i];
 	}
 }
-
+ */
 /*****************************************************************************************/
 void rf24::begin(void){
 	// Enable features

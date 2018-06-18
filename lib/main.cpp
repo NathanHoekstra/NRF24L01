@@ -34,8 +34,28 @@ int main( void ){
 	radio.begin();
 	radio_2.begin();
 	
-	radio .stop_listening();
+	radio.stop_listening();
 	radio_2.start_listening();
+	
+	
+	struct temp_humidity{
+		uint8_t temperature = 0;
+		uint8_t humidity = 0;
+	};
+	temp_humidity payload;
+	payload.temperature = 28;
+	payload.humidity = 80;
+	
+	radio.write(payload);
+	
+	// Wait 100 ms to ensure the payload is send
+	hwlib::wait_ms(100);
+	
+	temp_humidity recv;
+	radio_2.read(recv);
+	
+	hwlib::cout << "Recieved temperature: " << hwlib::dec << recv.temperature << '\n';
+	hwlib::cout << "Recieved humidity: " << hwlib::dec << recv.humidity << '\n';
 	
 	/*
 	// Print debugging information
@@ -44,7 +64,7 @@ int main( void ){
 	hwlib::cout << "Radio #2:\n";
 	radio_2.print_details();
 	
-	 */
+	 
 	std::array<hwlib::string<5>, 5> data_array = {"test1", "test2", "test3", "test4", "test5"};
 	for(uint8_t i = 0; i < 5; i++){ 
 		radio.write(data_array[i]);
@@ -64,4 +84,5 @@ int main( void ){
 	hwlib::cout << "Checking radio status:\n";
 	radio.print_details();
 	radio_2.print_details();
+	 */
 }

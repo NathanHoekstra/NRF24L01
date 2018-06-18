@@ -5,11 +5,13 @@
 class rf24
 {
 private:
+	// Variables
 	hwlib::spi_bus & bus;
 	hwlib::pin_out & ce; // Chip Enable (activates TX or RX mode)
 	hwlib::pin_out & csn; // SPI Chip select
 	uint8_t payload_size;
 	
+	// Functions
 	uint8_t read_register(const uint8_t & reg);
 	std::array<uint8_t, 5> read_register_5byte(const uint8_t & reg);
 	
@@ -33,6 +35,30 @@ private:
 	void enable_dyn_ack(void);
 	void disable_features(void);
 	
+	void write_payload(const std::array<uint8_t, 32> & data, const uint8_t & length);
+	void read_payload(std::array<uint8_t, 32> & buffer);
+	
+	template<size_t size>
+	void write(const std::array<uint8_t, size> & data, const uint8_t length){
+		//hwlib::cout << "size: " << length << '\n';
+		//hwlib::cout << "data: " << data[1] << '\n';
+		uint8_t max_length = 32;
+		std::array<uint8_t, 32> input = {0};
+		for(uint8_t i = 0; i < std::min(length, max_length); i++){
+			input[i] = data[i];
+		}
+		write_payload(input, 32);
+	}
+	template<size_t size>
+	void read(std::array<uint8_t, size> & data, const uint8_t length){
+		std::array<uint8_t, 32> buffer;
+		uint8_t max_length = 32;
+		read_payload(buffer);
+		for(uint8_t i = 0; i < std::min(length, max_length); i++){
+			data[i] = buffer[i];
+		}
+	}
+	
 public:
 	rf24(hwlib::spi_bus & bus, hwlib::pin_out & ce, hwlib::pin_out & csn);
 	
@@ -41,14 +67,23 @@ public:
 	void set_channel(const uint8_t & channel);
 	uint8_t get_channel(void);
 	
-	void write_payload(const std::array<uint8_t, 32> & data, const uint8_t & length);
-	void read_payload(std::array<uint8_t, 32> & buffer);
-	
 	void start_listening(void);
 	void stop_listening(void);
 	
-	void write(const hwlib::string<0> & data);
-	void read(hwlib::string<32> & buffer);
+	//void write(const hwlib::string<0> & data);
+	
+	template<typename datatype>
+	void write(const datatype & d){
+		// This call is one big hack written by https://github.com/wovo/
+		write( *(std::array<uint8_t, sizeof(d)> *) & d, sizeof(d) );
+	}
+	
+	//void read(hwlib::string<32> & buffer);
+	
+	template<typename datatype>
+	void read(datatype & d){
+		read( *(std::array<uint8_t, sizeof(d)> *) & d, sizeof(d) );
+	}
 	
 	void begin(void);
 };
