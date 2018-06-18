@@ -5,7 +5,8 @@
 rf24::rf24(hwlib::spi_bus & bus, hwlib::pin_out & ce, hwlib::pin_out & csn):
 	bus(bus),
 	ce(ce),
-	csn(csn)
+	csn(csn),
+	payload_size(32)
 {}
 
 /*****************************************************************************************/
@@ -82,7 +83,7 @@ void rf24::print_details(void){
 	
 	print_address_register("RX_ADDR_P0-1", RX_ADDR_P0, 2);
 	print_byte_register("RX_ADDR_P2-5", RX_ADDR_P2, 4);
-	print_address_register("TX_ADDR\ts", TX_ADDR);
+	print_address_register("TX_ADDR\t", TX_ADDR);
 
 	print_byte_register("RX_PW_P0-5", RX_PW_P0,5);
 	print_byte_register("EN_AA\t", EN_AA);
@@ -91,6 +92,7 @@ void rf24::print_details(void){
 	print_byte_register("RF_SETUP", RF_SETUP);
 	print_byte_register("CONFIG\t", NRF_CONFIG);
 	print_byte_register("DYNPD/FEATURE",DYNPD, 2);
+	hwlib::cout << '\n';
 }
 
 /*****************************************************************************************/
@@ -144,6 +146,36 @@ void rf24::power_up(void){
 }
 
 /*****************************************************************************************/
+void rf24::enable_dyn_payload(void){
+	uint8_t feature = read_register(FEATURE);
+	write_register(FEATURE, feature | (1<<EN_DPL));
+	
+	// Also enable dynamic payload on all the pipes
+	uint8_t dynpd = read_register(DYNPD);
+	write_register(DYNPD, dynpd | (1<<DPL_P0) | (1<<DPL_P1) | (1<<DPL_P2) | (1<<DPL_P3) | (1<<DPL_P4) | (1<<DPL_P5));
+}
+
+/*****************************************************************************************/
+void rf24::enable_ack_payload(void){
+	uint8_t feature = read_register(FEATURE);
+	write_register(FEATURE, feature | (1<<EN_ACK_PAY));
+	// For this feature to work the dynamic payload length needs to be enabled
+	enable_dyn_payload();
+}
+
+/*****************************************************************************************/
+void rf24::enable_dyn_ack(void){
+	uint8_t feature = read_register(FEATURE);
+	write_register(FEATURE, feature | (1<<EN_DYN_ACK));
+}
+
+/*****************************************************************************************/
+void rf24::disable_features(void){
+	write_register(FEATURE, 0);
+	write_register(DYNPD, 0);
+}
+
+/*****************************************************************************************/
 void rf24::set_channel(const uint8_t & channel){
 	const uint8_t max_channel = 125;
 	write_register(RF_CH, std::min(channel, max_channel));
@@ -155,7 +187,7 @@ uint8_t rf24::get_channel(void){
 }
 
 /*****************************************************************************************/
-void rf24::write_payload(const std::array<uint8_t, 7> & data, const uint8_t & length){
+void rf24::write_payload(const std::array<uint8_t, 32> & data, const uint8_t & length){
 	const uint8_t max_lenght = 32;
 	std::array<uint8_t, 33> input = {0};
 	std::array<uint8_t, 33> dummy;
@@ -163,13 +195,13 @@ void rf24::write_payload(const std::array<uint8_t, 7> & data, const uint8_t & le
 	for(uint8_t i = 0; i < std::min(length, max_lenght); i++){
 		input[i+1] = data[i];
 	}
-	hwlib::cout << "Write payload test: ";
+	hwlib::cout << "Writing payload: ";
 	for(uint8_t i = 0; i < 33; i++){
 		hwlib::cout << hwlib::hex << input[i];
 	}
 	hwlib::cout << '\n';
 	bus.write_and_read(csn, input, dummy);
-	// Give high pulse to ce for 20ns (minimum is 10ns)
+	// Give high pulse to ce for 20ns (minimum specified is 10ns)
 	ce.set(1);
 	hwlib::wait_us(20);
 	ce.set(0);
@@ -188,6 +220,7 @@ void rf24::read_payload(std::array<uint8_t, 32> & buffer){
 
 /*****************************************************************************************/
 void rf24::start_listening(void){
+	ce.set(0);
 	power_up();
 	uint8_t config = read_register(NRF_CONFIG);
 	write_register(NRF_CONFIG, config | (1<<PRIM_RX));
@@ -213,3 +246,26 @@ void rf24::stop_listening(void){
 }
 
 /*****************************************************************************************/
+void rf24::write(const hwlib::string<0> & data){
+	std::array<uint8_t, 32> buffer = {0};
+	for(uint8_t i = 0; i < data.length(); i ++){
+		buffer[i] = data[i];
+	}
+	write_payload(buffer, 32);
+}
+
+/*****************************************************************************************/
+void rf24::read(hwlib::string<32> & buffer){
+	std::array<uint8_t, 32> output = {0};
+	read_payload(output);
+	for(uint8_t i = 0; i < 32; i++){
+		buffer[i] = output[i];
+	}
+}
+
+/*****************************************************************************************/
+void rf24::begin(void){
+	// Enable features
+	enable_ack_payload();
+	enable_dyn_ack();
+}
