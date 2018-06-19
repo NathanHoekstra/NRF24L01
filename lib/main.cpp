@@ -31,9 +31,16 @@ int main( void ){
 	
 	hwlib::wait_ms(1000);
 	
+	radio.set_power_level(pwr_max);
+	radio.print_power_level();
+	
+	radio.set_data_rate(rf24_250kbps);
+	radio.print_details();
+
 	radio.begin();
 	radio_2.begin();
 	
+	/*
 	radio.stop_listening();
 	radio_2.start_listening();
 	
@@ -57,32 +64,10 @@ int main( void ){
 	hwlib::cout << "Recieved temperature: " << hwlib::dec << recv.temperature << '\n';
 	hwlib::cout << "Recieved humidity: " << hwlib::dec << recv.humidity << '\n';
 	
-	/*
 	// Print debugging information
 	hwlib::cout << "Radio #1:\n";
 	radio.print_details();
 	hwlib::cout << "Radio #2:\n";
-	radio_2.print_details();
-	
-	 
-	std::array<hwlib::string<5>, 5> data_array = {"test1", "test2", "test3", "test4", "test5"};
-	for(uint8_t i = 0; i < 5; i++){ 
-		radio.write(data_array[i]);
-		
-		// Wait 100 ms to ensure the payload is send
-		hwlib::wait_ms(100);
-		
-		hwlib::string<32> buffer;
-		radio_2.read(buffer);
-		hwlib::cout << "I recieved: ";
-		for(uint8_t i = 0; i< 32;i++){
-			hwlib::cout << buffer[i];
-		}
-		hwlib::cout << "\n\n";
-	}
-	
-	hwlib::cout << "Checking radio status:\n";
-	radio.print_details();
 	radio_2.print_details();
 	 */
 }

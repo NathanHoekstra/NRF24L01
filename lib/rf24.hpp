@@ -67,6 +67,12 @@ public:
 	void set_channel(const uint8_t & channel);
 	uint8_t get_channel(void);
 	
+	void set_power_level(uint8_t level);
+	void print_power_level(void);
+	
+	void set_data_rate(uint8_t rate);
+	void print_data_rate(void);
+	
 	void start_listening(void);
 	void stop_listening(void);
 	
@@ -74,7 +80,7 @@ public:
 	
 	template<typename datatype>
 	void write(const datatype & d){
-		// This call is one big hack written by https://github.com/wovo/
+		// This typecall is one big hack written by https://github.com/wovo/
 		write( *(std::array<uint8_t, sizeof(d)> *) & d, sizeof(d) );
 	}
 	
@@ -82,6 +88,7 @@ public:
 	
 	template<typename datatype>
 	void read(datatype & d){
+		// This typecall is one big hack written by https://github.com/wovo/
 		read( *(std::array<uint8_t, sizeof(d)> *) & d, sizeof(d) );
 	}
 	

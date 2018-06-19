@@ -1,6 +1,8 @@
 #include "rf24.hpp"
 #include "nrf24l01.hpp"
 
+// All bitshift operation are with thanks to https://stackoverflow.com/questions/47981/how-do-you-set-clear-and-toggle-a-single-bit
+
 /*****************************************************************************************/
 rf24::rf24(hwlib::spi_bus & bus, hwlib::pin_out & ce, hwlib::pin_out & csn):
 	bus(bus),
@@ -216,6 +218,56 @@ void rf24::set_channel(const uint8_t & channel){
 /*****************************************************************************************/
 uint8_t rf24::get_channel(void){
 	return read_register(RF_CH);
+}
+
+/*****************************************************************************************/
+void rf24::set_power_level(uint8_t level){
+	uint8_t setup = read_register(RF_SETUP) & 0xF8;
+	
+	if(level > pwr_max){
+		level = (pwr_max << 1) + 1;
+	}else{
+		level = (level << 1) + 1;
+	}
+	write_register(RF_SETUP, (setup |= level));
+}
+
+/*****************************************************************************************/
+void rf24::print_power_level(void){
+	std::array<hwlib::string<7>, 4> pwr_str = {"pwr_min", "pwr_low", "pwr_high", "pwr_max"};
+	uint8_t setup = read_register(RF_SETUP);
+	uint8_t level = (setup & ((1 << pwr_low) | (1<<pwr_high))) >> 1;
+	hwlib::cout << "Power level: " << pwr_str[level] << '\n';
+}
+
+/*****************************************************************************************/
+void rf24::set_data_rate(uint8_t rate){
+	uint8_t setup = read_register(RF_SETUP);
+	if(rate == rf24_250kbps){
+		setup = setup | (1<< RF_DR_LOW);
+		write_register(RF_SETUP, setup);
+	}else if(rate == rf24_1mbps){
+		// Check if RF_DR_LOW bit has been set, if so clear it first
+		if((setup & (1<<RF_DR_LOW))){
+			setup &= ~(1 << 5);
+		}
+		setup ^= (-0 ^ setup) & (1 << RF_DR_HIGH);
+		write_register(RF_SETUP, setup);
+	}else if(rate == rf24_2mbps){
+		// Check if RF_DR_LOW bit has been set, if so clear it first
+		if((setup & (1<<RF_DR_LOW))){
+			setup &= ~(1 << 5);
+		}
+		setup ^= (-1 ^ setup) & (1 << RF_DR_HIGH);
+		write_register(RF_SETUP, setup);
+	}else{
+		hwlib::cout << "Invalid data rate, please change parameter!\n";
+	}
+}
+
+/*****************************************************************************************/
+void rf24::print_data_rate(void){
+	//std::array<hwlib::string<12>, 3> rate_str = {"rf24_1mbps", "rf24_2mbps", "rf24_250kbps"};
 }
 
 /*****************************************************************************************/

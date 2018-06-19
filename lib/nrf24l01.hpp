@@ -89,3 +89,14 @@ enum bit_mnemonic{
 	EN_ACK_PAY		= 1,
 	EN_DYN_ACK		= 0
 };
+enum power_levels{
+	pwr_min			= 0,
+	pwr_low			= 1,
+	pwr_high		= 2,
+	pwr_max			= 3
+};
+enum data_rate{
+	rf24_1mbps		= 0,
+	rf24_2mbps		= 1,
+	rf24_250kbps	= 2
+};
