@@ -51,12 +51,13 @@ int main( void ){
 	radio.set_data_rate(rf24_1mbps);
 	radio.set_transmit_address({0xFF,0xAB,0xAB,0xAB,0xAB});
 	
-	//radio.set_channel(50);
-	
 	radio_2.set_power_level(pwr_low);
 	radio_2.set_data_rate(rf24_1mbps);
 	radio_2.set_transmit_address({0xFF,0xAB,0xAB,0xAB,0xAB});
-
+	
+	radio.print_details();
+	
+	/*
 	radio.stop_listening();
 	radio_2.start_listening();
 	
@@ -80,6 +81,7 @@ int main( void ){
 		hwlib::cout << "Recieved humidity: " << hwlib::dec << recv.humidity << "\n\n";
 		hwlib::wait_ms(1000);
 	}
+	 */
 	/*
 	hwlib::cout << "Radio 01:\n";
 	radio.print_details();

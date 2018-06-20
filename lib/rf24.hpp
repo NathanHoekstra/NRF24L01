@@ -73,6 +73,8 @@ public:
 	void set_data_rate(uint8_t rate);
 	void print_data_rate(void);
 	
+	void set_retransmission(const uint8_t & delay, const uint8_t & count);
+	
 	void set_transmit_address(const std::array<uint8_t, 5> & address);
 	void set_recieve_address(const uint8_t & pipe, const std::array<uint8_t, 5> & address);
 	
@@ -92,6 +94,9 @@ public:
 		if((status & (1<<4))){
 			// Flush tx fifo since data transmission has failed and return 0
 			flush_tx();
+			// But reset MAX_RT first for the next round
+			status = (1<<4);
+			write_register(NRF_STATUS, status);
 			return 0;
 		}
 		return 1;

@@ -90,6 +90,7 @@ void rf24::print_details(void){
 	print_byte_register("RX_PW_P0-5", RX_PW_P0,5);
 	print_byte_register("EN_AA\t", EN_AA);
 	print_byte_register("EN_RXADDR", EN_RXADDR);
+	print_byte_register("SETUP_RETR", SETUP_RETR);
 	print_byte_register("RF_CH\t", RF_CH);
 	print_byte_register("RF_SETUP", RF_SETUP);
 	print_byte_register("CONFIG\t", NRF_CONFIG);
@@ -279,6 +280,12 @@ void rf24::print_data_rate(void){
 		rate = 1;
 	}
 	hwlib::cout << "Data rate: " << rate_str[rate] << '\n';
+}
+
+/*****************************************************************************************/
+void rf24::set_retransmission(const uint8_t & delay, const uint8_t & count){
+	uint8_t setup_retr = ((0xff & delay) << ARD) | ((0xff & count) << ARC);
+	write_register(SETUP_RETR, setup_retr);
 }
 
 /*****************************************************************************************/
