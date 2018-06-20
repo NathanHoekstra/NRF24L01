@@ -28,46 +28,62 @@ int main( void ){
 	rf24 radio(spi_bus, CE, CSN);
 	rf24 radio_2(spi_bus_2, CE_2, CSN_2);
 	
-	
-	hwlib::wait_ms(1000);
-	
-	radio.set_power_level(pwr_max);
-	radio.print_power_level();
-	
-	radio.set_data_rate(rf24_250kbps);
-	radio.print_details();
-
-	radio.begin();
-	radio_2.begin();
-	
-	/*
-	radio.stop_listening();
-	radio_2.start_listening();
-	
-	
+	// Create data struct
 	struct temp_humidity{
 		uint8_t temperature = 0;
 		uint8_t humidity = 0;
 	};
+	
 	temp_humidity payload;
 	payload.temperature = 28;
 	payload.humidity = 80;
 	
-	radio.write(payload);
-	
-	// Wait 100 ms to ensure the payload is send
-	hwlib::wait_ms(100);
-	
+	// Create struct to save data to:
 	temp_humidity recv;
-	radio_2.read(recv);
 	
-	hwlib::cout << "Recieved temperature: " << hwlib::dec << recv.temperature << '\n';
-	hwlib::cout << "Recieved humidity: " << hwlib::dec << recv.humidity << '\n';
+	// Wait 1sec to initialize everything
+	hwlib::wait_ms(1000);
 	
-	// Print debugging information
-	hwlib::cout << "Radio #1:\n";
+	radio.begin();
+	radio_2.begin();
+	
+	radio.set_power_level(pwr_low);
+	radio.set_data_rate(rf24_1mbps);
+	radio.set_transmit_address({0xFF,0xAB,0xAB,0xAB,0xAB});
+	
+	//radio.set_channel(50);
+	
+	radio_2.set_power_level(pwr_low);
+	radio_2.set_data_rate(rf24_1mbps);
+	radio_2.set_transmit_address({0xFF,0xAB,0xAB,0xAB,0xAB});
+
+	radio.stop_listening();
+	radio_2.start_listening();
+	
+	while(true){
+		payload.temperature += 1;
+		payload.humidity += 1;
+		
+		hwlib::cout << "Sending temp: " << payload.temperature << '\n';
+		hwlib::cout << "Sending humidity: " << payload.humidity << "\n\n";
+		
+		if(!radio.write(payload)){
+			hwlib::cout << "Data transmission failed!\n";
+		}
+		
+		if(radio_2.data_available()){
+			hwlib::cout << "Data available! now reading\n";
+			radio_2.read(recv);
+		}
+		
+		hwlib::cout << "Recieved temperature: " << hwlib::dec << recv.temperature << '\n';
+		hwlib::cout << "Recieved humidity: " << hwlib::dec << recv.humidity << "\n\n";
+		hwlib::wait_ms(1000);
+	}
+	/*
+	hwlib::cout << "Radio 01:\n";
 	radio.print_details();
-	hwlib::cout << "Radio #2:\n";
+	hwlib::cout << "Radio 02:\n";
 	radio_2.print_details();
 	 */
 }

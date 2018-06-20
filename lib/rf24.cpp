@@ -186,11 +186,13 @@ void rf24::write_payload(const std::array<uint8_t, 32> & data, const uint8_t & l
 	for(uint8_t i = 0; i < std::min(length, max_lenght); i++){
 		input[i+1] = data[i];
 	}
+	/*
 	hwlib::cout << "Writing payload: ";
 	for(uint8_t i = 0; i < 33; i++){
 		hwlib::cout << hwlib::hex << input[i];
 	}
 	hwlib::cout << '\n';
+	 */
 	bus.write_and_read(csn, input, dummy);
 	// Give high pulse to ce for 20ns (minimum specified is 10ns)
 	ce.set(1);
@@ -244,6 +246,7 @@ void rf24::print_power_level(void){
 void rf24::set_data_rate(uint8_t rate){
 	uint8_t setup = read_register(RF_SETUP);
 	if(rate == rf24_250kbps){
+		setup ^= (-0 ^ setup) & (1 << RF_DR_HIGH);
 		setup = setup | (1<< RF_DR_LOW);
 		write_register(RF_SETUP, setup);
 	}else if(rate == rf24_1mbps){
@@ -267,7 +270,37 @@ void rf24::set_data_rate(uint8_t rate){
 
 /*****************************************************************************************/
 void rf24::print_data_rate(void){
-	//std::array<hwlib::string<12>, 3> rate_str = {"rf24_1mbps", "rf24_2mbps", "rf24_250kbps"};
+	std::array<hwlib::string<12>, 3> rate_str = {"rf24_1mbps", "rf24_2mbps", "rf24_250kbps"};
+	uint8_t setup = read_register(RF_SETUP);
+	uint8_t rate = 0;
+	if((setup & (1<<RF_DR_LOW))){
+		rate = 2;
+	}else if((setup & (1<<RF_DR_HIGH))){
+		rate = 1;
+	}
+	hwlib::cout << "Data rate: " << rate_str[rate] << '\n';
+}
+
+/*****************************************************************************************/
+void rf24::set_transmit_address(const std::array<uint8_t, 5> & address){
+	write_register_5byte(TX_ADDR, address);
+	// Also set RX_ADDR_P0 equal to this address to enable auto ack
+	write_register_5byte(RX_ADDR_P0, address);
+}
+
+/*****************************************************************************************/
+void rf24::set_recieve_address(const uint8_t & pipe, const std::array<uint8_t, 5> & address){
+	std::array<uint8_t, 6> pipe_names = {RX_ADDR_P0, RX_ADDR_P1, RX_ADDR_P2, RX_ADDR_P3, RX_ADDR_P4, RX_ADDR_P5};
+	std::array<uint8_t, 6> enable_rx = {ERX_P0, ERX_P1, ERX_P2, ERX_P3, ERX_P4, ERX_P5};
+	if(pipe < 6){
+		if(pipe < 2){
+			write_register_5byte(pipe_names[pipe], address);
+		}else{
+			write_register(pipe_names[pipe], address[0]);
+			// Also enable the corresponding pipe
+			write_register(EN_RXADDR, (1<<enable_rx[pipe]));
+		}
+	}
 }
 
 /*****************************************************************************************/
@@ -298,6 +331,18 @@ void rf24::stop_listening(void){
 }
 
 /*****************************************************************************************/
+bool rf24::data_available(void){
+	uint8_t status = read_register(FIFO_STATUS);
+	// Check if RX_EMPTY bit has been set, if not data is available
+	if(!(status & (1<<RX_EMPTY) )){
+		return 1;
+	}
+	return 0;
+}
+
+// Deprecated code
+
+/*****************************************************************************************/
 /*
 void rf24::write(const hwlib::string<0> & data){
 	std::array<uint8_t, 32> buffer = {0};
@@ -322,4 +367,6 @@ void rf24::begin(void){
 	// Enable features
 	enable_ack_payload();
 	enable_dyn_ack();
+	// Change from default channel on start, can always be changed after calling begin
+	set_channel(60);
 }

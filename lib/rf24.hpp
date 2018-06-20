@@ -73,15 +73,28 @@ public:
 	void set_data_rate(uint8_t rate);
 	void print_data_rate(void);
 	
+	void set_transmit_address(const std::array<uint8_t, 5> & address);
+	void set_recieve_address(const uint8_t & pipe, const std::array<uint8_t, 5> & address);
+	
 	void start_listening(void);
 	void stop_listening(void);
+	
+	bool data_available(void);
 	
 	//void write(const hwlib::string<0> & data);
 	
 	template<typename datatype>
-	void write(const datatype & d){
+	bool write(const datatype & d){
 		// This typecall is one big hack written by https://github.com/wovo/
 		write( *(std::array<uint8_t, sizeof(d)> *) & d, sizeof(d) );
+		
+		uint8_t status = read_register(0x07);
+		if((status & (1<<4))){
+			// Flush tx fifo since data transmission has failed and return 0
+			flush_tx();
+			return 0;
+		}
+		return 1;
 	}
 	
 	//void read(hwlib::string<32> & buffer);
