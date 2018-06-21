@@ -227,6 +227,7 @@ uint8_t rf24::get_channel(void){
 void rf24::set_power_level(uint8_t level){
 	uint8_t setup = read_register(RF_SETUP) & 0xF8;
 	
+	// If supplied power level is higher then the max, set power level to the max level
 	if(level > pwr_max){
 		level = (pwr_max << 1) + 1;
 	}else{

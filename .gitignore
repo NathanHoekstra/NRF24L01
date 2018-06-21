@@ -17,3 +17,5 @@ __codelite.workspace
 *.pdf
 *.html
 bmptk_*_stack.c
+docs/
+!index.html
