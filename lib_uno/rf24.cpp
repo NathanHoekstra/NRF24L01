@@ -156,7 +156,6 @@ void rf24::enable_dyn_payload(void){
 	// Also enable dynamic payload on all the pipes
 	uint8_t dynpd = read_register(DYNPD);
 	write_register(DYNPD, dynpd | (1<<DPL_P0) | (1<<DPL_P1) | (1<<DPL_P2) | (1<<DPL_P3) | (1<<DPL_P4) | (1<<DPL_P5));
-	dyn_payloads = true;
 }
 
 /*****************************************************************************************/
@@ -177,7 +176,6 @@ void rf24::enable_dyn_ack(void){
 void rf24::disable_features(void){
 	write_register(FEATURE, 0);
 	write_register(DYNPD, 0);
-	dyn_payloads = false;
 }
 
 /*****************************************************************************************/

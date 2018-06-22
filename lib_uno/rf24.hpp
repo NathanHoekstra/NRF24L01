@@ -19,7 +19,6 @@ private:
 	hwlib::pin_out & ce; // Chip Enable (activates TX or RX mode)
 	hwlib::pin_out & csn; // SPI Chip select
 	uint8_t payload_size;
-	bool dyn_payloads = false;
 
 public:
 	/**
@@ -169,12 +168,9 @@ public:
 	*/
 	template<typename datatype>
 	bool write(const datatype & d){
-		if(dyn_payloads){
-			write_payload( *(std::array<uint8_t, sizeof(d)> *) & d, sizeof(d));
-		}else{
-			// This typecast is written by https://github.com/wovo/
-			write( *(std::array<uint8_t, sizeof(d)> *) & d, sizeof(d) );
-		}
+		// This typecast is written by https://github.com/wovo/
+		write( *(std::array<uint8_t, sizeof(d)> *) & d, sizeof(d) );
+		
 		uint8_t status = read_register(0x07);
 		if((status & (1<<4))){
 			// Flush tx fifo since data transmission has failed and return 0
@@ -240,26 +236,6 @@ private:
 	void disable_features(void);
 	
 	void write_payload(const std::array<uint8_t, 32> & data, const uint8_t & length);
-	
-	template<size_t size>
-	void write_payload(const std::array<uint8_t, size> & data, const uint8_t & length){
-		std::array<uint8_t, size +1> input = {0};
-		//std::array<uint8_t, size +1> dummy;
-		input[0] = 0xA0;
-		for(uint8_t i = 0; i < length; i++){
-			input[i+1] = data[i];
-		}
-		hwlib::cout << "Writing payload: ";
-		for(uint8_t i = 0; i < length; i++){
-			hwlib::cout << hwlib::hex << input[i];
-		}
-		//bus.write_and_read(csn, input, dummy);
-		// Give high pulse to ce for 20ns (minimum specified is 10ns)
-		ce.set(1);
-		hwlib::wait_us(20);
-		ce.set(0);
-	}
-	
 	void read_payload(std::array<uint8_t, 32> & buffer);
 	
 	template<size_t size>

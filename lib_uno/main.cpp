@@ -36,8 +36,8 @@ int main( void ){
 	};
 	
 	temp_humidity payload;
-	payload.temperature = 26;
-	payload.humidity = 78;
+	payload.temperature = 1;
+	payload.humidity = 2;
 	
 	// Create struct to save data to:
 	//temp_humidity recv;
@@ -60,10 +60,8 @@ int main( void ){
 	
 	
 	radio.stop_listening();
-	
-	radio.write(payload);
 	//radio_2.start_listening();
-	/*
+	
 	while(true){
 		payload.temperature += 1;
 		payload.humidity += 1;
@@ -74,7 +72,7 @@ int main( void ){
 		if(!radio.write(payload)){
 			hwlib::cout << "Data transmission failed!\n";
 		}
-		 
+		/*
 		if(radio_2.data_available()){
 			hwlib::cout << "Data available! now reading\n";
 			radio_2.read(recv);
@@ -82,7 +80,14 @@ int main( void ){
 		hwlib::cout << "Recieved temperature: " << hwlib::dec << recv.temperature << '\n';
 		hwlib::cout << "Recieved humidity: " << hwlib::dec << recv.humidity << "\n\n";
 		hwlib::wait_ms(1000);
-
+		*/
+		hwlib::wait_ms(1000);
 	}
-	*/
+	
+	/*
+	hwlib::cout << "Radio 01:\n";
+	radio.print_details();
+	hwlib::cout << "Radio 02:\n";
+	radio_2.print_details();
+	 */
 }
