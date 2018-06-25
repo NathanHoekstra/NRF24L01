@@ -160,6 +160,14 @@ void rf24::enable_dyn_payload(void){
 }
 
 /*****************************************************************************************/
+void rf24::disable_dyn_payload(void){
+	uint8_t feature = read_register(FEATURE);
+	feature &= ~(1 << EN_DPL);
+	write_register(FEATURE, feature);
+	dyn_payloads = false;
+}
+
+/*****************************************************************************************/
 void rf24::enable_ack_payload(void){
 	uint8_t feature = read_register(FEATURE);
 	write_register(FEATURE, feature | (1<<EN_ACK_PAY));
@@ -171,6 +179,15 @@ void rf24::enable_ack_payload(void){
 void rf24::enable_dyn_ack(void){
 	uint8_t feature = read_register(FEATURE);
 	write_register(FEATURE, feature | (1<<EN_DYN_ACK));
+	payload_no_ack = true;
+}
+
+/*****************************************************************************************/
+void rf24::disable_dyn_ack(void){
+	uint8_t feature = read_register(FEATURE);
+	feature &= ~(1 << EN_DYN_ACK);
+	write_register(FEATURE, feature);
+	payload_no_ack = false;
 }
 
 /*****************************************************************************************/
@@ -178,6 +195,7 @@ void rf24::disable_features(void){
 	write_register(FEATURE, 0);
 	write_register(DYNPD, 0);
 	dyn_payloads = false;
+	payload_no_ack = false;
 }
 
 /*****************************************************************************************/
@@ -185,7 +203,11 @@ void rf24::write_payload(const std::array<uint8_t, 32> & data, const uint8_t & l
 	const uint8_t max_lenght = 32;
 	std::array<uint8_t, 33> input = {0};
 	std::array<uint8_t, 33> dummy;
-	input[0] = W_TX_PAYLOAD;
+	if(payload_no_ack){
+		input[0] = W_TX_PAYLOAD_NO_ACK;
+	}else{
+		input[0] = W_TX_PAYLOAD;
+	}
 	for(uint8_t i = 0; i < std::min(length, max_lenght); i++){
 		input[i+1] = data[i];
 	}
@@ -350,8 +372,13 @@ bool rf24::data_available(void){
 	return 0;
 }
 
-// Deprecated code
+/*****************************************************************************************/
+uint8_t rf24::get_payload_size(void){
+	uint8_t size = read_register(R_RX_PL_WID);
+	return size;
+}
 
+// Deprecated code
 /*****************************************************************************************/
 /*
 void rf24::write(const hwlib::string<0> & data){
@@ -374,9 +401,8 @@ void rf24::read(hwlib::string<32> & buffer){
  */
 /*****************************************************************************************/
 void rf24::begin(void){
-	// Enable features
+	// Enable automatic acknowledge
 	enable_ack_payload();
-	enable_dyn_ack();
 	// Change from default channel on start, can always be changed after calling begin
 	set_channel(60);
 }
