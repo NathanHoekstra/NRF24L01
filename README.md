@@ -72,7 +72,7 @@ int main( void ){
   radio.stop_listening();
   radio_2.start_listening();
 		
-  // Send an recieve data 4 times
+  // Send an recieve data in a continues loop
   for(;;){
 	  hwlib::cout << "Sending temp: " << payload.temperature << '\n';
 	  hwlib::cout << "Sending humidity: " << payload.humidity << "\n\n";
