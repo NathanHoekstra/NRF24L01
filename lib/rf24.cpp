@@ -1,3 +1,8 @@
+//          Copyright Nathan Hoekstra 2018.
+// Distributed under the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_1_0.txt or copy at
+//          https://www.boost.org/LICENSE_1_0.txt)
+
 #include "rf24.hpp"
 #include "nrf24l01.hpp"
 
@@ -203,11 +208,7 @@ void rf24::write_payload(const std::array<uint8_t, 32> & data, const uint8_t & l
 	const uint8_t max_lenght = 32;
 	std::array<uint8_t, 33> input = {0};
 	std::array<uint8_t, 33> dummy;
-	if(payload_no_ack){
-		input[0] = W_TX_PAYLOAD_NO_ACK;
-	}else{
-		input[0] = W_TX_PAYLOAD;
-	}
+	input[0] = W_TX_PAYLOAD;
 	for(uint8_t i = 0; i < std::min(length, max_lenght); i++){
 		input[i+1] = data[i];
 	}

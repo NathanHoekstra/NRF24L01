@@ -12,7 +12,7 @@
 SOURCES := rf24.cpp
 
 # header files in this project
-HEADERS := rf24.hpp nrf24l01.hpp
+HEADERS := rf24.hpp nrf24l01.hpp rf_test.hpp
 
 # other places to look for files for this project
 SEARCH  := 

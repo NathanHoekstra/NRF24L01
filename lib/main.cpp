@@ -1,6 +1,7 @@
 #include "hwlib.hpp"
 #include "rf24.hpp"
 #include "nrf24l01.hpp"
+#include "rf_test.hpp"
 
 int main( void ){	
    // kill the watchdog
@@ -28,6 +29,15 @@ int main( void ){
 	rf24 radio(spi_bus, CE, CSN);
 	rf24 radio_2(spi_bus_2, CE_2, CSN_2);
 	
+	hwlib::wait_ms(500);
+	rf_test test(radio, radio_2);
+	//test.test_spi_communication();
+	//test.test_write_functions();
+	test.test_read_write();
+	
+	//radio.print_details();
+	
+	/*
 	// Create data struct
 	struct temp_humidity{
 		uint8_t temperature = 0;
@@ -60,13 +70,12 @@ int main( void ){
 	
 	radio.stop_listening();
 	radio_2.start_listening();
-	
-	/*
+
 	radio.write(payload);
 	radio_2.read(recv);
 	hwlib::cout << "Recieved temp: " << hwlib::dec << recv.temperature << '\n';
 	hwlib::cout << "Recieved humidity: " << hwlib::dec << recv.humidity << '\n';
-	*/
+
 	for(uint8_t i = 0; i < 10; i++){
 		payload.temperature += 1;
 		payload.humidity += 1;
@@ -87,4 +96,5 @@ int main( void ){
 		hwlib::wait_ms(1000);
 
 	}
+	*/
 }

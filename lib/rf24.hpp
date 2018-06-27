@@ -1,11 +1,14 @@
-/**
- * @file rf24.hpp
- */
- 
+//          Copyright Nathan Hoekstra 2018.
+// Distributed under the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE_1_0.txt or copy at
+//          https://www.boost.org/LICENSE_1_0.txt)
+
 #ifndef RF24_HPP
 #define RF24_HPP
 #include "hwlib.hpp"
-
+/**
+ * @file rf24.hpp
+ */
 
 /**
  * \brief
@@ -235,23 +238,6 @@ public:
 	
 	/**
 	* \brief
-	* This function enables the W_TX_PAYLOAD_NOACK command
-	* @note
-	* When this feature is enabled, write() will send the payload without auto acknowledge!
-	*/
-	void enable_dyn_ack(void);
-	
-	/**
-	* \brief
-	* This function disables the W_TX_PAYLOAD_NOACK command
-	* @note
-	* When this feature is disabled(default), write() can send a payload with auto acknowledge.
-	* This is when enable_ack_payload() is set, which is default when calling begin()
-	*/
-	void disable_dyn_ack(void);
-	
-	/**
-	* \brief
 	* Enable payloads with auto acknowledge
 	* \details
 	* This function also toggles enable_dyn_payload() since it is needed by this function.
@@ -285,12 +271,27 @@ public:
 	*/
 	void set_retransmission(const uint8_t & delay, const uint8_t & count);
 	
+	/**
+	* \brief
+	* Read a 1-byte register
+	* \details
+	* Read a one byte register from the module, valid parameters are specified in nrf24l01.hpp or
+	* refer to the module's datasheet.
+	*/
+	uint8_t read_register(const uint8_t & reg);
+	
+	/**
+	* \brief
+	* Read a 5-byte register
+	* \details
+	* Read a 5-byte register from the module, valid parameters are specified in nrf24l01.hpp or
+	* refer to the module's datasheet.
+	*/
+	std::array<uint8_t, 5> read_register_5byte(const uint8_t & reg);
+	
 	// End Advanced functions
 	///@}
 private:
-	// Functions
-	uint8_t read_register(const uint8_t & reg);
-	std::array<uint8_t, 5> read_register_5byte(const uint8_t & reg);
 	
 	uint8_t get_status(void);
 	void print_status(const uint8_t & status);
@@ -307,17 +308,16 @@ private:
 	void power_down(void);
 	void power_up(void);
 	
+	void enable_dyn_ack(void);
+	void disable_dyn_ack(void);
+	
 	void write_payload(const std::array<uint8_t, 32> & data, const uint8_t & length);
 	
 	template<size_t size>
 	void write_payload(const std::array<uint8_t, size> & data, const uint8_t & length){
 		std::array<uint8_t, size +1> input = {0};
 		std::array<uint8_t, size +1> dummy;
-		if(payload_no_ack){
-			input[0] = 0xB0;
-		}else{
-			input[0] = 0xA0;
-		}
+		input[0] = 0xA0;
 		for(uint8_t i = 0; i < length; i++){
 			input[i+1] = data[i];
 		}
@@ -350,7 +350,7 @@ private:
 	void read(std::array<uint8_t, size> & data, uint8_t length){
 		if(dyn_payloads){
 			length = get_payload_size();
-			hwlib::cout << "Recieved payload length: " << hwlib::dec << length << '\n';
+			//hwlib::cout << "Recieved payload length: " << hwlib::dec << length << '\n';
 		}
 		std::array<uint8_t, 32> buffer;
 		uint8_t max_length = 32;
