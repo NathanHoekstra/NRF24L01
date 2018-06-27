@@ -31,70 +31,9 @@ int main( void ){
 	
 	hwlib::wait_ms(500);
 	rf_test test(radio, radio_2);
-	//test.test_spi_communication();
-	test.test_write_functions();
+	test.test_spi_communication();
+	//test.test_write_functions();
 	//test.test_read_write();
 	
 	//radio.print_details();
-	
-	/*
-	// Create data struct
-	struct temp_humidity{
-		uint8_t temperature = 0;
-		uint8_t humidity = 0;
-	};
-	
-	temp_humidity payload;
-	payload.temperature = 26;
-	payload.humidity = 78;
-	
-	// Create struct to save data to:
-	temp_humidity recv;
-	
-	// Wait 1sec to initialize everything
-	hwlib::wait_ms(500);
-	
-	radio.begin();
-	radio_2.begin();
-	
-	radio.set_power_level(pwr_low);
-	radio.set_data_rate(rf24_1mbps);
-	radio.set_transmit_address({0xFF,0xAB,0xAB,0xAB,0xAB});
-	
-	radio_2.set_power_level(pwr_low);
-	radio_2.set_data_rate(rf24_1mbps);
-	radio_2.set_transmit_address({0xFF,0xAB,0xAB,0xAB,0xAB});
-	
-	//radio.print_details();
-	
-	
-	radio.stop_listening();
-	radio_2.start_listening();
-
-	radio.write(payload);
-	radio_2.read(recv);
-	hwlib::cout << "Recieved temp: " << hwlib::dec << recv.temperature << '\n';
-	hwlib::cout << "Recieved humidity: " << hwlib::dec << recv.humidity << '\n';
-
-	for(uint8_t i = 0; i < 10; i++){
-		payload.temperature += 1;
-		payload.humidity += 1;
-		
-		hwlib::cout << "Sending temp: " << payload.temperature << '\n';
-		hwlib::cout << "Sending humidity: " << payload.humidity << "\n\n";
-		
-		if(!radio.write(payload)){
-			hwlib::cout << "Data transmission failed!\n";
-		}
-		 
-		if(radio_2.data_available()){
-			hwlib::cout << "Data available! now reading\n";
-			radio_2.read(recv);
-		}
-		hwlib::cout << "Recieved temperature: " << hwlib::dec << recv.temperature << '\n';
-		hwlib::cout << "Recieved humidity: " << hwlib::dec << recv.humidity << "\n\n";
-		hwlib::wait_ms(1000);
-
-	}
-	*/
 }

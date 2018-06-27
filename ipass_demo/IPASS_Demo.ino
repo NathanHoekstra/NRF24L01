@@ -50,7 +50,6 @@ void setup() {
   radio.stopListening();
   radio.printDetails();                     // Dump the configuration of the rf unit for debugging
   Serial.println("Reset!");
-  
 }
 
 void loop() {
