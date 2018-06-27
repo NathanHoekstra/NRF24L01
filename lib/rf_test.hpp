@@ -86,6 +86,7 @@ public:
 			hwlib::cout << "[FAIL]	Channel returned incorrect number on module #2\n";
 		}
 		// End channel test
+		hwlib::wait_ms(500);
 		
 		hwlib::cout << "\nTesting set_data_rate function\n";
 		hwlib::cout << "Setting data rate to rf24_2mbps, if it's printed out twice then the test is succesful\n";
@@ -94,6 +95,7 @@ public:
 		module01.print_data_rate();
 		module02.print_data_rate();
 		// End data rate test
+		hwlib::wait_ms(500);
 		
 		hwlib::cout << "\nTesting set_power_level function\n";
 		hwlib::cout << "Setting power level to pwr_max, if it's printed out twice then the test is succesful\n";
@@ -102,6 +104,7 @@ public:
 		module01.print_power_level();
 		module02.print_power_level();
 		// End power level test
+		hwlib::wait_ms(500);
 		
 		hwlib::cout << "\nTesting set_recieve_address function\n";
 		std::array<uint8_t, 5> rx_addr = {0x1A,0xAB,0xAB,0xAB,0xAB};
@@ -120,6 +123,7 @@ public:
 			hwlib::cout << "[FAIL]	set_recieve_address failed on module #2\n";
 		}
 		// End set recieve test
+		hwlib::wait_ms(500);
 		
 		hwlib::cout << "\nTesting set_transmit_address function\n";
 		std::array<uint8_t, 5> tx_addr = {0x1F,0xAC,0xAC,0xAC,0xAC};
@@ -138,6 +142,7 @@ public:
 			hwlib::cout << "[FAIL]	set_transmit_address failed on module #2\n";
 		}
 		// End set transmit test
+		hwlib::wait_ms(500);
 		
 		hwlib::cout << "\nTesting enable_dyn_payload/ disable_dyn_payload function\n";
 		module01.enable_dyn_payload();
@@ -169,6 +174,7 @@ public:
 			hwlib::cout << "[FAIL]	disable_dyn_payload failed on module #2\n";
 		}
 		// End dynamic payload test
+		hwlib::wait_ms(500);
 		
 		hwlib::cout << "\nTesting enable_ack_payload function\n";
 		module01.enable_ack_payload();
@@ -186,6 +192,7 @@ public:
 			hwlib::cout << "[FAIL]	enable_dyn_ack failed on module #2\n";
 		}
 		// End enable ack payload test
+		hwlib::wait_ms(500);
 		
 		hwlib::cout << "\nTesting disable_features function\n";
 		module01.disable_features();

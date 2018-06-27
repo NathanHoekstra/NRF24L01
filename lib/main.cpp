@@ -32,8 +32,8 @@ int main( void ){
 	hwlib::wait_ms(500);
 	rf_test test(radio, radio_2);
 	//test.test_spi_communication();
-	//test.test_write_functions();
-	test.test_read_write();
+	test.test_write_functions();
+	//test.test_read_write();
 	
 	//radio.print_details();
 	
