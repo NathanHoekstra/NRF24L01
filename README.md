@@ -101,3 +101,5 @@ int main( void ){
 }
 
 ```
+## Pinout
+![NRF24L01+ pinout](https://i.imgur.com/zvteGzl.png)
